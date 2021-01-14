@@ -7,3 +7,5 @@ Find the code for the frontend of the application (here)[https://github.com/arke
 1. Nodejs
 2. Express
 3. PostgreSQL
+4. Knex
+5. Bcrypt

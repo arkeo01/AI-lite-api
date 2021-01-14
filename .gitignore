@@ -22,3 +22,7 @@ yarn-error.log*
 procedure.txt
 
 package-lock.json
+
+improvement-proposals
+
+creds.js

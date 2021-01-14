@@ -2,12 +2,14 @@ const express = require('express');
 const bcrypt = require('bcrypt-nodejs');    // other bcrypt package can be migrated to
 const cors = require('cors');
 
+const Credentials = require('./creds');
+
 const db = require('knex')({
     client: 'pg',
     connection: {
       host : '127.0.0.1',
-      user : 'versilio',
-      password : 'aniket123',
+      user : Credentials.POSTGRES_USER,
+      password : Credentials.POSTGRES_PASSWORD,
       database : 'ai_lite'
     }
 });
@@ -102,15 +104,4 @@ app.put('/image', (req, res) => {
 
 
 app.listen(3000, () => console.log('app is running on port 3000'));
-
-
-/*
-INTIAL API DESIGN
-
-/ --> res= this is working 
-/signin --> POST = Success/fail
-/register --> POST = user
-/profile/:userId --> GET = user
-/image --> PUT --> user
-*/
 
