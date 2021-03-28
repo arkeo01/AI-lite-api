@@ -39,6 +39,7 @@ app.get('/profile/:id', (req, res) => profile.fetchProfileByID(req, res, db));
 // Understand we do not pass id as a parameter here? Why is it passed in the body of the request?
 // TODO: New Feature: Update the count only when the images are unique
 app.put('/image', (req, res) => image.updateImageCount(req, res, db));
+app.post('/imageUrl', (req, res) => image.handleApiCall(req, res));
 
 app.listen(3000, () => console.log('app is running on port 3000'));
 
