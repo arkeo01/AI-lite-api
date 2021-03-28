@@ -1,10 +1,14 @@
 const express = require('express');
 const bcrypt = require('bcrypt-nodejs');    // other bcrypt package can be migrated to
 const cors = require('cors');
-
+const knex = require('knex');
+const register = require('./controllers/register');
+const signin = require('./controllers/signin');
 const Credentials = require('./creds');
+const profile = require('./controllers/profile');
+const image = require('./controllers/image');
 
-const db = require('knex')({
+const db = knex({
     client: 'pg',
     connection: {
       host : '127.0.0.1',
@@ -16,92 +20,25 @@ const db = require('knex')({
 
 const app = express();
 
-// To parse the json data
 app.use(express.json());
 // To prevent Access-allow-control-origin error from chrome
 app.use(cors());
 
+// TODO: Fix a bug that comes with returning the db.users
 app.get('/', (req, res) => {
     req.body
-    // res.send(database.users);
+    // res.send(db.users);
 });
 
-app.post('/signin', (req, res) => {    
-
-    db.select('email', 'hash')
-        .from('login')
-        .where('email', '=', req.body.email)
-        .then(data => {
-            const isValid = bcrypt.compareSync(req.body.password, data[0].hash);
-            if(isValid) {
-                return db.select('*').from('users')
-                    .where('email', '=', req.body.email)
-                    .then(user => res.json(user[0]))
-                    .catch(err => res.status(400).json('Error while fetching user!'))
-            }else{
-                res.status(400).json('Wrong Credentials!')
-            }
-        })
-        .catch(err => res.status(400).json('Wrong Credentials'))
-});
-
-app.post('/register', (req, res) => {
-    const {email, name, password} = req.body;
-
-    const hash = bcrypt.hashSync(password);
-    
-    db.transaction(trx => {
-        trx.insert({
-            hash,
-            email
-        })
-            .into('login')
-            .returning('email')
-            .then(loginEmail => {
-                return trx('users')
-                    .returning('*')
-                    .insert({
-                        email: loginEmail[0],
-                        name: name,
-                        joined: new Date()
-                    })
-                    .then(user => res.json(user[0]))
-                    .catch(err => res.status(400).json('Error while registering user!'))
-            })
-            .then(trx.commit)
-            .catch(trx.rollback);
-    })
-
-});
-
-app.get('/profile/:id', (req, res) => {
-    const { id } = req.params;
-    let found = false;
-
-    db.select('*').from('users').where({id})
-        .then(user => {
-            if(user.length)
-                res.json(user[0])
-            else
-                res.status(400).json('User not found!');
-        })
-        .catch(err => res.status(400).json('error getting user!'));
-});
+// Dependency Injection -> The way we have injected the db and bcrypt dependency in the handleRegister function.
+// A different definition of handleSignin, Currying is used here. Check the definition in the signin file.
+app.post('/signin', signin.handleSignin(db, bcrypt));
+app.post('/register', (req, res) => register.handleRegister(req, res, db, bcrypt));
+app.get('/profile/:id', (req, res) => profile.fetchProfileByID(req, res, db));
 
 // Understand we do not pass id as a parameter here? Why is it passed in the body of the request?
 // TODO: New Feature: Update the count only when the images are unique
-app.put('/image', (req, res) => {
-    const { id } = req.body;
-
-    db('users')
-        .where('id', '=', id)
-        .increment('entries', 1)
-        .returning('entries')
-        .then(entries => res.json(entries[0]))
-        .catch(err => res.status(400).json('Unable to get entries!'))
-})
-
-
+app.put('/image', (req, res) => image.updateImageCount(req, res, db));
 
 app.listen(3000, () => console.log('app is running on port 3000'));
 
