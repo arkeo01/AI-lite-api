@@ -23,8 +23,8 @@ app.use(cors());
 
 // TODO: Fix a bug that comes with returning the db.users
 app.get('/', (req, res) => {
-    req.body
-    // res.send(db.users);
+    // req.body
+    res.send('Successfully Connected');
 });
 
 // Dependency Injection -> The way we have injected the db and bcrypt dependency in the handleRegister function.
