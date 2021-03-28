@@ -1,8 +1,7 @@
 const Clarifai = require('clarifai');
-const Credentials = require('../creds');
 
 const app = new Clarifai.App({
-    apiKey: Credentials.CLARIFAI_API_KEY
+    apiKey: process.env.CLARIFAI_API_KEY
 });
 
 // Here instead of ImageUrl, input is passed as it would give an error and 
